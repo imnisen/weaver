@@ -64,4 +64,40 @@
 
 
 
-;;;
+;;; web server
+
+(ql:quickload :usocket :bordeaux-threads)
+(defmacro force-format (stream &rest args)
+  `(progn
+     (funcall #'format ,stream ,@args)
+     (force-output ,stream)))
+
+;; output content from client
+;; plus some mark then return to client
+(defun handle-connection (socket)
+  (let* ((connection (usocket:socket-accept socket))
+         (stream (usocket:socket-stream connection)))
+    (loop for line = (read-line stream nil nil)
+       while line do (progn
+                       (force-format *standard-output* "Client send: ~a~%" line)
+                       (force-format stream "~a +1~%" line)))
+    (force-format *standard-output* "Conection ends.~%")))
+
+(defun accept-connection (socket)
+  (bt:make-thread
+   (lambda () (handle-connection socket))))
+
+(defun start (host port)
+  (usocket:with-socket-listener (socket host port :reuse-address t)
+    (loop when (usocket:wait-for-input socket) do
+         (accept-connection socket))))
+
+
+(defun test-client (host port)
+  (usocket:with-client-socket (socket stream host port)
+    (loop for i below 10 do
+         (progn
+           (force-format stream "Request once: ~a ~%" i)
+           (sleep 1)
+           (force-format *standard-output* "From server:~a~%" (read-line stream nil 'the-end))))
+    (force-format *standard-output* "Outof loop")))

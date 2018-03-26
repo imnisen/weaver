@@ -16,10 +16,12 @@
   :version "0.1"
   :author "Nisen"
   :license ""
-  :depends-on ()
+  :depends-on (:cl-ppcre
+               :usocket
+               :bordeaux-threads)
   :components ((:module "src"
-                :components
-                ((:file "weaver"))))
+                        :components
+                        ((:file "weaver"))))
   :description ""
   :long-description
   #.(with-open-file (stream (merge-pathnames
