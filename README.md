@@ -8,7 +8,6 @@ Weaver is a self made web framework. Not finished yet.
 
 Wish me good luck;)
 
-
 ## Installation
 
 ## Author
@@ -22,7 +21,14 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 ## TODOLIST
 
 -   [X] basic route
--   [ ] basic web server
+-   [X] basic socket server
+-   [X] can read and output html
+-   [ ] refator with class
+-   [ ] support headers
+-   [ ] support args params body params etc
+-   [ ] socket error conditions handle
+-   [ ] html parse conditions handle
+-   [ ] thread pool support
 
 ## Flaws now
 

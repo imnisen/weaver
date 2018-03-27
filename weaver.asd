@@ -18,7 +18,9 @@
   :license ""
   :depends-on (:cl-ppcre
                :usocket
-               :bordeaux-threads)
+               :bordeaux-threads
+               :chunga
+               :flexi-stream)
   :components ((:module "src"
                         :components
                         ((:file "weaver"))))
