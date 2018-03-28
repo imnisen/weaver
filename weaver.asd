@@ -20,7 +20,7 @@
                :usocket
                :bordeaux-threads
                :chunga
-               :flexi-stream)
+               :flexi-streams)
   :components ((:module "src"
                         :components
                         ((:file "weaver"))))
