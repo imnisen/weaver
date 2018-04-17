@@ -22,8 +22,14 @@
                :chunga
                :flexi-streams)
   :components ((:module "src"
+                        :serial t
                         :components
-                        ((:file "weaver"))))
+                        ((:file "packages")
+                         (:file "utils")
+                         (:file "request")
+                         (:file "response")
+                         (:file "router")
+                         (:file "weaver"))))
   :description ""
   :long-description
   #.(with-open-file (stream (merge-pathnames
