@@ -1,29 +1,5 @@
 (in-package :weaver)
 
-
-;;; route
-
-;; (ql:quickload '(:usocket :bordeaux-threads :chunga :cl-ppcre :flexi-streams))
-
-(defun send-response (stream headers content)
-  (declare (ignore headers))
-  (destructuring-bind (status-code content reason-phrase)
-      (if (equal content 'no-match)
-          (list 510 "<html><p>No match</p></html>" "Internal1 Server Error")
-          (list 200 (concatenate 'string "<html><p>" content "</p></html>") "OK"))
-    (let ((h-stream (flex:make-flexi-stream stream)))
-      (format h-stream "HTTP/1.1 ~D ~A~C~C" status-code reason-phrase #\Return #\Linefeed)
-      (format h-stream "~C~C" #\Return #\Linefeed)
-      (write-sequence content h-stream)
-      (finish-output stream)))
-  )
-
-
-(defun make-response (response* stream)
-  (send-response stream nil (response-content response*)))
-
-
-
 (defun handle-request (stream)
   (let ((first-line (read-initial-request-line stream)))
     (when first-line
@@ -40,10 +16,8 @@
                                       :headers-in headers
                                       :method method
                                       :uri uri))
-             (result (dispatch request*))
-             (response* (make-instance 'response
-                                       :content result)))
-        (make-response response* stream)))))
+             (result (dispatch request*)))
+        (make-response stream result)))))
 
 ;; output content from client
 ;; plus some mark then return to client
@@ -81,10 +55,10 @@
 
 
 ;; ;; ;; test case
-;; (add-route :get "/hello/:name"
-;;            #'(lambda (req name) (format nil "hello ~a, header: ~a" name (headers-in req))))
+(add-route :get "/hello/:name"
+           #'(lambda (req name) (format nil "hello ~a, header: ~a" name (headers-in req))))
 
-;; (add-route :get "/goodbye/:name"
-;;            #'(lambda (req name) (format nil "goodbye ~a" name)))
+(add-route :get "/goodbye/:name"
+           #'(lambda (req name) (format nil "goodbye ~a" name)))
 
 ;; (weaver::start #(127 0 0 1) 8000)
