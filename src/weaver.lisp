@@ -3,21 +3,29 @@
 (defun handle-request (stream)
   (let ((first-line (read-initial-request-line stream)))
     (when first-line
-      (let* ((split-line (cl-ppcre:split "\\s+" first-line :limit 3))
+      (let* (;; extract request info here
+             (split-line (cl-ppcre:split "\\s+" first-line :limit 3))
              (method (chunga:as-keyword (first split-line)))
              (url-string (second split-line))
-             (uri (let ((match-start (position #\? url-string)))
-                    (if match-start
-                        (subseq url-string 0 match-start)  ;; drop args info here
-                        url-string)))
-
-             (headers (chunga:read-http-headers stream))
+             (match-start (position #\? url-string))
+             (uri (if match-start
+                      (subseq url-string 0 match-start)
+                      url-string))
+             (args (if match-start
+                       (parse-args-string (subseq url-string (1+ match-start)))
+                       (makehash)))  ;; params arg
+             (headers (p-r (chunga:read-http-headers stream)))
+             (content-length (make-sure-number (p-r (cdr (assoc :CONTENT-LENGTH headers)))))
+             (raw-body (read-http-body stream content-length))
              (request* (make-instance 'request
                                       :headers-in headers
                                       :method method
-                                      :uri uri))
-             (result (dispatch request*)))
-        (make-response stream result)))))
+                                      :uri uri
+                                      :args args
+                                      :raw-body raw-body
+                                      ))
+             (r (dispatch request*)))
+        (make-response stream r)))))
 
 ;; output content from client
 ;; plus some mark then return to client
@@ -55,10 +63,30 @@
 
 
 ;; ;; ;; test case
-(add-route :get "/hello/:name"
+(add-route :get "/case1/:name"
            #'(lambda (req name) (format nil "hello ~a, header: ~a" name (headers-in req))))
 
-(add-route :get "/goodbye/:name"
+(add-route :get "/case2/:name"
            #'(lambda (req name) (format nil "goodbye ~a" name)))
+
+(add-route :get "/case3/:name"
+           #'(lambda (req name) (make-instance 'response
+                                          :content (format nil "welcome ~a" name)
+                                          :status-code 200
+                                          :content-type "plain/text"
+                                          :headers (makehash :xxx "yyy"))))
+
+(add-route :get "/case4/:name"
+           #'(lambda (req name)
+               (format nil "hello ~a, req.args: x1:  ~a" name (gethash "x1" (request-args req) ))))
+
+
+(add-route :post "/case6/:name"
+           #'(lambda (req name)
+               (format nil "hello ~a, req.args: x1:  ~a, req.content.length:~a, req.body: ~a"
+                       name
+                       (gethash "x1" (request-args req))
+                       (cdr (assoc :content-length (headers-in req)))
+                       (raw-body req))))
 
 ;; (weaver::start #(127 0 0 1) 8000)

@@ -44,6 +44,7 @@
 ;;; demo
 ;;; (sethash h :a nil)
 ;;; (sethash h :a nil :allow-nil nil)  :a 的 值nil 不会被设置
+;; need 打磨
 (defun sethash (h &rest set-values &key (allow-nil t supplied-p) &allow-other-keys)
   "这个方法会直接改变传入的hashtable ;如果传入了allow-nil 参数，那么更新hashtable时把rest参数里的allow nil和值剔除掉"
   (if supplied-p
@@ -60,10 +61,22 @@
   h)
 
 ;; helper-fun
-(in-package :cl)
+;; (in-package :cl)
 (defun print-hash (h)
-  (format t "----hashtable begin-----")
+  (format t "~%----hashtable begin-----~%")
   (loop for k being the hash-keys of h
      using (hash-value v)
      do (format t "~& ~a => ~a~&" k v))
-  (format t "----hashtable end -----"))
+  (format t "~%----hashtable end -----~%"))
+
+(defun p-r (x)
+  (format t "~%----p-r begin-----~%")
+  (format t "~a" x)
+  (format t "~%----p-r end -----~%")
+  x)
+
+
+(defun make-sure-number (x)
+  (cond ((stringp x) (parse-integer x :junk-allowed t))
+        ((numberp x) x)
+        (t nil)))

@@ -26,12 +26,19 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [X] refactor with class
 - [X] support request headers
 - [X] sperate files
-- [ ] support response headers
-- [ ] support args params body params etc
+- [X] support response headers
+- [X] support args params body params etc
 - [ ] socket error conditions handle
 - [ ] html parse conditions handle
 - [ ] thread pool support
 - [ ] refactor with generic function
+- [ ] add convenient tools, about response wrapper
+- [ ] make it strong
+- [ ] add content-type support
+- [ ] add transfer-coding support
+- [ ] add chunked body support
+- [ ] format request body according to content-type
+- [ ] add default headers, such as headers etc
 
 
 ** Flaws now
