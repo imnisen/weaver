@@ -3,7 +3,7 @@
 (defun handle-request (stream)
   (let ((first-line (read-initial-request-line stream)))
     (when first-line
-      (let* (;; extract request info here
+      (let* ( ;; extract request info here
              (split-line (cl-ppcre:split "\\s+" first-line :limit 3))
              (method (chunga:as-keyword (first split-line)))
              (url-string (second split-line))
@@ -13,10 +13,11 @@
                       url-string))
              (args (if match-start
                        (parse-args-string (subseq url-string (1+ match-start)))
-                       (makehash)))  ;; params arg
+                       (makehash))) ;; params arg
              (headers (p-r (chunga:read-http-headers stream)))
              (content-length (make-sure-number (p-r (cdr (assoc :CONTENT-LENGTH headers)))))
-             (raw-body (read-http-body stream content-length))
+             (raw-body (when content-length
+                         (read-http-body stream content-length)))
              (request* (make-instance 'request
                                       :headers-in headers
                                       :method method
@@ -35,18 +36,21 @@
     (handle-request stream)
     (force-format *standard-output* "Conection ends.~%")
     (usocket:socket-close connection) ;;need it?
-    ;;(close stream)
+    ;; (close stream)
     ))
 
 (defun accept-connection (socket)
-  (bt:make-thread
-   (lambda () (handle-connection socket))))
+  (handler-case (bt:make-thread
+                 (lambda () (handle-connection socket)))
+    (error (c)
+      (format t "error happens when make-thread")
+      (error c))))
 
 (defun start (host port)
   (usocket:with-socket-listener
       (socket host port :reuse-address t :element-type '(unsigned-byte 8))
     (format t "Listening for connections...~%")
-    (loop when (usocket:wait-for-input socket) do
+    (loop when (usocket:wait-for-input socket :ready-only t) do
          (accept-connection socket))))
 
 

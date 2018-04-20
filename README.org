@@ -28,17 +28,19 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [X] sperate files
 - [X] support response headers
 - [X] support args params body params etc
-- [ ] socket error conditions handle
-- [ ] html parse conditions handle
-- [ ] thread pool support
+- [ ] add content-type support
+- [ ] format request body according to content-type
+- [ ] add transfer-coding support
+- [ ] add chunked body support
+- [ ] add default headers, such as headers etc
+- [ ] handle when url match but method not allow
 - [ ] refactor with generic function
 - [ ] add convenient tools, about response wrapper
 - [ ] make it strong
-- [ ] add content-type support
-- [ ] add transfer-coding support
-- [ ] add chunked body support
-- [ ] format request body according to content-type
-- [ ] add default headers, such as headers etc
+- [ ] friendly log message
+- [ ] socket error conditions handle
+- [ ] html parse conditions handle
+- [ ] thread pool support
 
 
 ** Flaws now
