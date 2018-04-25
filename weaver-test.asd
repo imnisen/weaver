@@ -12,10 +12,14 @@
   :author "Nisen"
   :license ""
   :depends-on (:weaver
-               :prove)
+               :prove
+               :cl-json
+               :dexador
+               :yason
+               :drakma)
   :components ((:module "t"
-                :components
-                ((:test-file "weaver"))))
+                        :components
+                        ((:test-file "weaver"))))
   :description "Test system for weaver"
 
   :defsystem-depends-on (:prove-asdf)

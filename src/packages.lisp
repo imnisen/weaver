@@ -2,4 +2,8 @@
 (defpackage weaver
   (:use :cl)
   (:export #:start
-           #:add-route))
+           #:add-route
+           #:stop
+           #:headers-in
+           #:request-args
+           #:raw-body))

@@ -20,7 +20,8 @@
                :usocket
                :bordeaux-threads
                :chunga
-               :flexi-streams)
+               :flexi-streams
+               :alexandria)
   :components ((:module "src"
                         :serial t
                         :components
@@ -28,6 +29,7 @@
                          (:file "utils")
                          (:file "request")
                          (:file "response")
+                         (:file "http-protocol")
                          (:file "router")
                          (:file "weaver"))))
   :description ""

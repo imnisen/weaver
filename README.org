@@ -28,6 +28,9 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [X] sperate files
 - [X] support response headers
 - [X] support args params body params etc
+- [ ] add test case
+- [ ] add stop method
+- [ ] add basic test case
 - [ ] add content-type support
 - [ ] format request body according to content-type
 - [ ] add transfer-coding support
@@ -41,7 +44,7 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [ ] socket error conditions handle
 - [ ] html parse conditions handle
 - [ ] thread pool support
-
+- [ ] soft and graceful stop
 
 ** Flaws now
 - handler args 顺序重要
