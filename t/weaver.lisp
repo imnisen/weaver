@@ -37,24 +37,27 @@
 (defvar +x-content-value1+ "x-content-value1")
 (defvar +x-content-value2+ "x-content-value2")
 
-(defun p-r (x)
-  (format t "~%----p-r begin-----~%")
-  (format t "~a" x)
-  (format t "~%----p-r end -----~%")
-  x)
+(defmacro p-r (x)
+  (let* ((g (gensym)))
+    `(let ((,g ,x))
+       (format t "~%----p-r begin origin form ~a -----~%" ',x)
+       (format t "~a" ,g)
+       (format t "~%----p-r end -----~%")
+       ,g)))
 
 ;; add some route
+(defun convert-to-symbol (x)
+  (intern (string-upcase x) "KEYWORD"))
 (weaver:add-route :post "/hello/:name"
                   #'(lambda (req name)
                       (let ((hash (make-hash-table :test 'equal)))
+                        (p-r (headers-in req))
                         (setf (gethash "name" hash) name
                               (gethash "headers" hash) (let ((h (make-hash-table :test 'equal)))
                                                          (setf (gethash +x-header-key1+ h)
-                                                               (progn
-                                                                 (format t "!!!!!!!!~a~%" (cdr (assoc (intern +x-header-key1+) (headers-in req))))
-                                                                 (cdr (assoc (intern +x-header-key1+) (headers-in req))))
-                                                               )
-                                                         (setf (gethash +x-header-key2+ h) (cdr (assoc (intern +x-header-key2+) (headers-in req))))
+                                                               (cdr (assoc (convert-to-symbol +x-header-key1+) (headers-in req)))
+                                                               (gethash +x-header-key2+ h)
+                                                               (cdr (p-r (assoc (p-r (convert-to-symbol +x-header-key2+)) (headers-in req)))))
                                                          h)
                               (gethash "args" hash ) (let ((h (make-hash-table :test 'equal)))
                                                        (setf (gethash +x-arg-key1+ h) (gethash +x-arg-key1+ (request-args req)))

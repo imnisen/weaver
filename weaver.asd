@@ -29,7 +29,6 @@
                          (:file "utils")
                          (:file "request")
                          (:file "response")
-                         (:file "http-protocol")
                          (:file "router")
                          (:file "weaver"))))
   :description ""

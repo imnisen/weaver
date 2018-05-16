@@ -69,11 +69,20 @@
      do (format t "~& ~a => ~a~&" k v))
   (format t "~%----hashtable end -----~%"))
 
-(defun p-r (x)
-  (format t "~%----p-r begin-----~%")
-  (format t "~a" x)
-  (format t "~%----p-r end -----~%")
-  x)
+
+;; (defun p-r (x)
+;;   (format t "~%----p-r begin-----~%")
+;;   (format t "~a" x)
+;;   (format t "~%----p-r end -----~%")
+;;   x)
+
+(defmacro p-r (x)
+  (let* ((g (gensym)))
+    `(let ((,g ,x))
+       (format t "~%----p-r begin origin form ~a -----~%" ',x)
+       (format t "~a" ,g)
+       (format t "~%----p-r end -----~%")
+       ,g)))
 
 
 (defun make-sure-number (x)

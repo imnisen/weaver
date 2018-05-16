@@ -33,3 +33,30 @@
          ((>= length content-length) s)
        ;; (format t "~%~a~%" length)
        (write-char (chunga:read-char* stream nil nil) s)))))
+
+(defun parse-request (stream)
+  "this function get content from stream to meaningful http content
+   "
+  (alexandria:when-let
+      (first-line (read-initial-request-line stream))
+    (let* ((split-line (cl-ppcre:split "\\s+" first-line :limit 3))
+           (method (chunga:as-keyword (first split-line)))
+           (url-string (second split-line))
+           (match-start (position #\? url-string))
+           (uri (if match-start
+                    (subseq url-string 0 match-start)
+                    url-string))
+           (args (if match-start
+                     (parse-args-string (subseq url-string (1+ match-start)))
+                     (makehash))) ;; params arg
+           (headers (p-r (chunga:read-http-headers stream)))
+           (content-length (make-sure-number (p-r (cdr (assoc :CONTENT-LENGTH headers)))))
+           (raw-body (when content-length
+                       (read-http-body stream content-length))))
+      (make-instance 'request
+                     :headers-in headers
+                     :method method
+                     :uri uri
+                     :args args
+                     :raw-body raw-body
+                     ))))

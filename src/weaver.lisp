@@ -18,12 +18,12 @@
     (error (c)
       (format t "error happens when handle-connection->: ~A~%" C))))
 
-(DEFUN ACCEPT-CONNECTION (SOCKET)
-  (HANDLER-CASE (BT:MAKE-THREAD
-                 (LAMBDA () (HANDLE-CONNECTION SOCKET)))
-    (ERROR (C)
-      (FORMAT T "ERROR HAPPENS WHEN MAKE-THREAD")
-      (ERROR C))))
+(defun accept-connection (socket)
+  (handler-case (bt:make-thread
+                 (lambda () (handle-connection socket)))
+    (error (c)
+      (format t "error happens when make-thread")
+      (error c))))
 
 
 ;; (defvar *keep-going* t)

@@ -28,9 +28,8 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [X] sperate files
 - [X] support response headers
 - [X] support args params body params etc
-- [ ] add test case
-- [ ] add stop method
-- [ ] add basic test case
+- [X] add stop method
+- [X] add basic test case
 - [ ] add content-type support
 - [ ] format request body according to content-type
 - [ ] add transfer-coding support
