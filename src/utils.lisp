@@ -89,3 +89,12 @@
   (cond ((stringp x) (parse-integer x :junk-allowed t))
         ((numberp x) x)
         (t nil)))
+
+(defun alist-get (key alist)
+  (cdr (assoc key alist)))
+
+(defun upcase-equal (a b)
+  (string-equal (string-upcase a) (string-upcase b)))
+
+(defun make-json-string (&rest args)
+  (json:encode-json-to-string (apply #'makehash args)))

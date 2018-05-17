@@ -49,4 +49,5 @@
                    ;; (format t "call handler~%")
                    (apply handler request* (1d-array-to-list arg-list))))))
          finally (return (make-instance 'response
-                                        :status-code 404))))))
+                                        :status-code 404
+                                        :content-type "application/json"))))))

@@ -1,5 +1,6 @@
 (in-package :weaver)
 
+;; TODO remove request-* prefix
 (defclass request ()
   ((headers-in :initarg :headers-in
                :reader headers-in)
@@ -10,7 +11,9 @@
    (args :initarg :args
          :reader request-args)
    (raw-body :initarg :raw-body
-             :reader raw-body))
+             :reader raw-body)
+   (body :initarg :body
+         :reader request-body))
   )
 
 ;; make it strong,when (parse-args-string "a=1&b=2,1&c=3&c=4&d")
@@ -34,6 +37,20 @@
        ;; (format t "~%~a~%" length)
        (write-char (chunga:read-char* stream nil nil) s)))))
 
+;; parse raw-body to structed body according to content-type
+;; TODO handle parse error
+(defun parse-body (headers raw-body)
+  (handler-case
+      (alexandria:when-let
+          (content-type (p-r (alist-get :content-type headers)))
+        (cond ((upcase-equal content-type "application/json")
+               (yason:parse raw-body))
+              (t nil) ;; not implented
+              ))
+    (error (c)
+      (format t "~% error happens when parse body: ~a  ~%" c)
+      nil)))
+
 (defun parse-request (stream)
   "this function get content from stream to meaningful http content
    "
@@ -52,11 +69,14 @@
            (headers (p-r (chunga:read-http-headers stream)))
            (content-length (make-sure-number (p-r (cdr (assoc :CONTENT-LENGTH headers)))))
            (raw-body (when content-length
-                       (read-http-body stream content-length))))
+                       (read-http-body stream content-length)))
+           (parsed-body (parse-body headers raw-body))
+           )
       (make-instance 'request
                      :headers-in headers
                      :method method
                      :uri uri
                      :args args
                      :raw-body raw-body
+                     :body parsed-body
                      ))))

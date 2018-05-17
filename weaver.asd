@@ -21,7 +21,9 @@
                :bordeaux-threads
                :chunga
                :flexi-streams
-               :alexandria)
+               :alexandria
+               :yason
+               :cl-json)
   :components ((:module "src"
                         :serial t
                         :components
