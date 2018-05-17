@@ -63,25 +63,19 @@
 ;; helper-fun
 ;; (in-package :cl)
 (defun print-hash (h)
-  (format t "~%----hashtable begin-----~%")
+  (log:debug "print-hash begin")
   (loop for k being the hash-keys of h
      using (hash-value v)
      do (format t "~& ~a => ~a~&" k v))
-  (format t "~%----hashtable end -----~%"))
+  (log:debug "print-hash end"))
 
-
-;; (defun p-r (x)
-;;   (format t "~%----p-r begin-----~%")
-;;   (format t "~a" x)
-;;   (format t "~%----p-r end -----~%")
-;;   x)
 
 (defmacro p-r (x)
   (let* ((g (gensym)))
     `(let ((,g ,x))
-       (format t "~%----p-r begin origin form ~a -----~%" ',x)
-       (format t "~a" ,g)
-       (format t "~%----p-r end -----~%")
+       (log:debug "-->")
+       (log:debug "~a~%" ',x)
+       (log:debug "~a~%" ,g)
        ,g)))
 
 

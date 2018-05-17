@@ -23,7 +23,8 @@
                :flexi-streams
                :alexandria
                :yason
-               :cl-json)
+               :cl-json
+               :log4cl)
   :components ((:module "src"
                         :serial t
                         :components

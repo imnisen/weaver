@@ -45,7 +45,7 @@
 
     (format h-stream "~C~C" #\Return #\Linefeed)
 
-    (format t "writing ~a to stream~%" content)
+    (log:debug "writing ~a to stream~%" content)
     (write-sequence content h-stream)
     (finish-output stream)))
 

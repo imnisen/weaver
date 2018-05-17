@@ -20,22 +20,19 @@
 (defun parse-args-string (string)
   (let ((hash (make-hash-table :test 'equal)))
     (loop for pair-string in (cl-ppcre:split "\\&" string)
-       do (progn (format t "~a~%" pair-string)
-                 (let* ((pair (cl-ppcre:split "\\=" pair-string))
-                        (key (first pair))
-                        (value (second pair)))
-                   (setf (gethash key hash) value))))
+       do (let* ((pair (cl-ppcre:split "\\=" pair-string))
+                 (key (first pair))
+                 (value (second pair)))
+            (setf (gethash key hash) value)))
     hash))
 
 
 (defun read-http-body (stream content-length)
-  (format t "content-length: ~a" content-length)
-  (p-r
-   (with-output-to-string (s)
-     (do ((length 0 (1+ length)))
-         ((>= length content-length) s)
-       ;; (format t "~%~a~%" length)
-       (write-char (chunga:read-char* stream nil nil) s)))))
+  (with-output-to-string (s)
+    (do ((length 0 (1+ length)))
+        ((>= length content-length) s)
+      ;; (format t "~%~a~%" length)
+      (write-char (chunga:read-char* stream nil nil) s))))
 
 ;; parse raw-body to structed body according to content-type
 ;; TODO handle parse error
@@ -47,8 +44,8 @@
                (yason:parse raw-body))
               (t nil) ;; not implented
               ))
-    (error (c)
-      (format t "~% error happens when parse body: ~a  ~%" c)
+    (error (e)
+      (log:error e)
       nil)))
 
 (defun parse-request (stream)

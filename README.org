@@ -32,7 +32,7 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [X] add basic test case
 - [X] add application/json body parse format
 - [X] make 404 error works
-- [ ] friendly log message
+- [X] friendly log message
 - [ ] add transfer-coding support
 - [ ] add chunked body support
 - [ ] add default headers, such as headers etc

@@ -11,19 +11,19 @@
       (let* ((connection (usocket:socket-accept socket))
              (stream (usocket:socket-stream connection)))
         (handle-request stream)
-        (force-format *standard-output* "Conection ends.~%")
+        (log:info "Connection ends")
         ;; (usocket:socket-close connection) ;;need it?
         (close stream)
         )
-    (error (c)
-      (format t "error happens when handle-connection->: ~A~%" C))))
+    (error (e)
+      (log:error e))))
 
 (defun accept-connection (socket)
   (handler-case (bt:make-thread
                  (lambda () (handle-connection socket)))
-    (error (c)
-      (format t "error happens when make-thread")
-      (error c))))
+    (error (e)
+      (log:error e)
+      (error e))))
 
 
 ;; (defvar *keep-going* t)
@@ -33,22 +33,23 @@
   (handler-case
       (usocket:with-socket-listener
           (socket host port :reuse-address t :element-type '(unsigned-byte 8))
-        (format t "Listening for connections...~%")
+        (log:info "Listening for connections...")
         (setf *running-socket* socket)
         (loop while (usocket:wait-for-input socket :ready-only t)
            do (accept-connection socket))
-        (format t "Server stop"))
+        (log:info "Server stop.")
+        )
     (error (e)
-      (format t "error occurs:  ~a" e))))
+      (log:error e))))
 
 (defun start (host port &key ((:foreground foreground) nil))
   (if foreground
       (serve host port)
       (handler-case (bt:make-thread
                      (lambda () (serve host port)))
-        (error (c)
-          (format t "error happens when make-thread")
-          (error c)))))
+        (error (e)
+          (log:error e)
+          (error e)))))
 
 ;; TODO fix it , now close rudely
 (defun stop ()

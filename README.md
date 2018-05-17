@@ -28,20 +28,21 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 -   [X] sperate files
 -   [X] support response headers
 -   [X] support args params body params etc
--   [ ] socket error conditions handle
--   [ ] html parse conditions handle
--   [ ] thread pool support
+-   [X] add stop method
+-   [X] add basic test case
+-   [X] add application/json body parse format
+-   [X] make 404 error works
+-   [X] friendly log message
+-   [ ] add transfer-coding support
+-   [ ] add chunked body support
+-   [ ] add default headers, such as headers etc
+-   [ ] make response header according to response content
+-   [ ] format request body according to content-type
+-   [ ] handle when url match but method not allow
 -   [ ] refactor with generic function
 -   [ ] add convenient tools, about response wrapper
 -   [ ] make it strong
--   [ ] add content-type support
--   [ ] add transfer-coding support
--   [ ] add chunked body support
--   [ ] format request body according to content-type
--   [ ] add default headers, such as headers etc
-
-## Flaws now
-
--   handler args 顺序重要
--   目前不支持定义url类型匹配
--   connection 断开错误处理没有做
+-   [ ] socket error conditions handle
+-   [ ] html parse conditions handle
+-   [ ] thread pool support
+-   [ ] soft and graceful stop
