@@ -46,9 +46,3 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 - [ ] html parse conditions handle
 - [ ] thread pool support
 - [ ] soft and graceful stop
-
-** Flaws now
-- handler args 顺序重要
-- 目前不支持定义url类型匹配
-- connection 断开错误处理没有做
-
