@@ -2,8 +2,13 @@
 
 (defun handle-request (stream)
   (format t "----handle-request---")
-  (alexandria:when-let (request (parse-request stream))
-    (make-response stream (dispatch request))))
+  ;; (make-response stream nil))
+  (let ((request (handler-case
+                     (parse-request stream)
+                   (error (e)
+                     (log:warn "Error occours while parsing request" e)
+                     (make-response stream "parse-request-error"))))) ;; temp behavior
+    (make-response stream (dispatch request)))) ;; here function interface not beautiful
 
 (defparameter *finish-processing-socket* nil)
 
@@ -11,8 +16,6 @@
   (handler-case
       (let* ((stream (usocket:socket-stream connection))
              (*finish-processing-socket* t))
-
-
         (unwind-protect
              (loop
                 (handle-request stream)
@@ -23,7 +26,7 @@
           (log:info "Connection ends")
           ))
     (error (e)
-      (log:error e))))
+      (log:error "Error occurs when handle connection" e))))
 
 (defun accept-socket (socket)
   (let ((connection (handler-case
@@ -42,10 +45,10 @@
 ;; (defvar *host* nil)
 ;; (defvar *port* nil)
 
-(defun serve (host port)
+(defun serve (address port)
   (handler-case
       (usocket:with-socket-listener
-          (socket host port :reuse-address t :element-type '(unsigned-byte 8))
+          (socket address port :reuse-address t :element-type '(unsigned-byte 8))
         (log:info "Listening for connections...")
 
         ;; (setf *running-socket* socket)
@@ -58,16 +61,17 @@
         (log:info "Server stop...")
         )
     (error (e)
-      (log:error e))))
+      (log:error "Error occous when in serve" e))))
 
-(defun start (host port &key ((:foreground foreground) nil))
-  (if foreground
-      (serve host port)
-      (handler-case (bt:make-thread
-                     (lambda () (serve host port)))
-        (error (e)
-          (log:error e)
-          (error e)))))
+(defun start (address port &key ((:foreground foreground) nil))
+  (let ((*keep-going* t))
+    (if foreground
+        (serve address port)
+        (handler-case (bt:make-thread
+                       (lambda () (serve address port)))
+          (error (e)
+            (log:error "Error occours when in start" e)
+            (error e))))))
 
 ;; TODO fix it , now close rudely
 (defun stop ()

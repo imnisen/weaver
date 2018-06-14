@@ -17,7 +17,7 @@
 
 (defmethod make-response (stream (response t))
   (send-response stream (make-instance 'response
-                                       :content-type "application/text" ;; need to guess with response
+                                       :content-type "text/plain" ;; need to guess with response
                                        :headers (make-default-headers)
                                        :status-code 200
                                        :content response)))
@@ -31,25 +31,28 @@
 
 (defmethod send-response (stream response)
   (format t "send-response-----~%")
-  (let* ((h-stream (flex:make-flexi-stream stream))
-         (status-code (status-code response))
-         (reason-phrase (gethash status-code +code-to-phrase+))
-         (headers (response-headers response))
-         (content (response-content response)))
-    (format h-stream "HTTP/1.1 ~D ~A~C~C"  status-code reason-phrase #\Return #\Linefeed)
-    ;; write headers
-    ;; tmp add content-type, latter move it to headers, todo fix latter
-    (write-header-line "Content-Type" (content-type response) h-stream)
-    (when headers
-      (loop for key being the hash-keys in headers using (hash-value value) do
-           (write-header-line (chunga:as-capitalized-string key) value h-stream)))
+  (handler-case
+      (let* ((h-stream (flex:make-flexi-stream stream))
+             (status-code (status-code response))
+             (reason-phrase (gethash status-code +code-to-phrase+))
+             (headers (response-headers response))
+             (content (response-content response)))
+        (format h-stream "HTTP/1.1 ~D ~A~C~C"  status-code reason-phrase #\Return #\Linefeed)
+        ;; write headers
+        ;; tmp add content-type, latter move it to headers, todo fix latter
+        (write-header-line "Content-Type" (content-type response) h-stream)
+        (when headers
+          (loop for key being the hash-keys in headers using (hash-value value) do
+               (write-header-line (chunga:as-capitalized-string key) value h-stream)))
 
-    (format h-stream "~C~C" #\Return #\Linefeed)
+        (format h-stream "~C~C" #\Return #\Linefeed)
 
-    (log:debug "writing ~a to stream~%" content)
-    (write-sequence content h-stream)
-    (break)
-    (finish-output stream)))
+        (log:debug "writing ~a to stream~%" content)
+        (write-sequence content h-stream)
+        (finish-output stream))
+    (error (e)
+      (log:error "Error happens when send-response")
+      (error e))))
 
 ;; copy from hunchentoot, TODO 稍后研究
 (defgeneric write-header-line (key value stream)

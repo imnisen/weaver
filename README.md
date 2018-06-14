@@ -33,8 +33,10 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 -   [X] add application/json body parse format
 -   [X] make 404 error works
 -   [X] friendly log message
--   [ ] add transfer-coding support
--   [ ] add chunked body support
+-   [X] add request transfer-encoding support
+-   [ ] arrange log message
+-   [ ] add content-encoding support
+-   [ ] add reply transfer-encoding support
 -   [ ] add default headers, such as headers etc
 -   [ ] make response header according to response content
 -   [ ] format request body according to content-type

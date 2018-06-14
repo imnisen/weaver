@@ -7,18 +7,15 @@
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :weaver)' in your Lisp.
 
-(plan nil)
-
-;; (ok (weaver:start "127.0.0.1" 8001) "Server started ?")
-
-(sleep 0.5)
 
 
 ;; define some test constant
+(defvar +address+ "127.0.0.1")
+(defvar +port+ 8001)
+(defvar +host+ (format nil "http://~a:~a" +address+ +port+))
 (defvar +user-agent+ "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3 Safari/600.3.18")
 (defvar +accept+ "*/*")
-(defvar +origin+ "127.0.0.1")
-(defvar +host+ "127.0.0.1:8001")
+(defvar +origin+ +address+)
 (defvar +status-ok+ 200)
 (defvar +status-not-found+ 404)
 
@@ -44,7 +41,7 @@
 
 ;; helper function
 (defun uri-to-url (uri &rest args)
-  (let ((url (format nil "http://127.0.0.1:8001~a" uri))
+  (let ((url (concatenate 'string +host+ uri))
         (arg-string nil))
     (if args
         (concatenate
@@ -70,7 +67,11 @@
   (format t "~%----hashtable end -----~%"))
 
 
+(plan nil)
 
+(ok (weaver:start +address+ +port+) "Server started ?")
+
+(sleep 0.5)
 
 ;; test general functions
 (weaver:add-route :post "/hello/:name"
@@ -108,7 +109,7 @@
                          )
   (is status +status-ok+)
   (when (> (length body) 0)
-    (let* ((body-json (yason:parse (flexi-streams:octets-to-string body))))
+    (let* ((body-json (yason:parse body))) ;; base on body type , octets ot string?
       (is "weaver" (gethash "name" body-json))
       (is +x-arg-value1+ (gethash +x-arg-key1+ (gethash "args" body-json)))
       (is +x-arg-value2+ (gethash +x-arg-key2+ (gethash "args" body-json)))
@@ -120,35 +121,35 @@
   )
 
 
-;; ;; test request chunking
-;; (weaver:add-route :post "/chunk"
-;;                   #'(lambda (request)
-;;                       (let ((hash (make-hash-table :test 'equal)))
-;;                         (setf (gethash "content" hash) (raw-body request))
-;;                         (json:encode-json-to-string hash)))
-;;                   )
+;; test request chunking
+(weaver:add-route :post "/chunk"
+                  #'(lambda (request)
+                      (let ((hash (make-hash-table :test 'equal)))
+                        (setf (gethash "content" hash) (raw-body request))
+                        (json:encode-json-to-string hash)))
+                  )
 
 
-;; (multiple-value-bind (body status)
-;;     (let ((continuation (drakma:http-request (uri-to-url "/chunk")
-;;                                              :method :post
-;;                                              :content :continuation)))
-;;       (funcall continuation "foo" t)
-;;       (funcall continuation (list (char-code #\z) (char-code #\a)) t)
+(multiple-value-bind (body status)
+    (let ((continuation (drakma:http-request (uri-to-url "/chunk")
+                                             :method :post
+                                             :content :continuation)))
+      (funcall continuation "foo" t)
+      (funcall continuation (list (char-code #\z) (char-code #\a)) t)
 
-;;       (funcall continuation (lambda (stream)
-;;                               (write-char #\p stream))))
-;;   (is status +status-ok+)
-;;   (when (> (length body) 0)
-;;     (let* ((body-json (yason:parse (flexi-streams:octets-to-string body))))
-;;       (is "foozap" (gethash "content" body-json))
-;;       ))
-;;   )
-
-
+      (funcall continuation (lambda (stream)
+                              (write-char #\p stream))))
+  (is status +status-ok+)
+  (when (> (length body) 0)
+    (let* ((body-json (yason:parse body)))
+      (is "foozap" (gethash "content" body-json))
+      ))
+  )
 
 
-;; (ok (weaver:stop) "Server Stopped ?")
+
+
+(ok (weaver:stop) "Server Stopped ?")
 
 
 (finalize)

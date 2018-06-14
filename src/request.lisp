@@ -34,7 +34,6 @@
 
 (defun read-http-body (stream content-length chunkedp)
   (format t "-----read-http-body----~%")
-  (format t "~% ~a ~a ~a ~%" stream content-length chunkedp)
   (cond ((and content-length chunkedp) (error 'request-header-error))
         (content-length
          (with-output-to-string (s)
@@ -77,39 +76,43 @@
   "this function get content from stream to meaningful http content
    "
   (format t "---parse-request----")
-  (alexandria:when-let
-      (first-line (read-initial-request-line stream))
-    (let* ((split-line (cl-ppcre:split "\\s+" first-line :limit 3))
-           (method (chunga:as-keyword (first split-line)))
-           (url-string (second split-line))
+  (handler-case
+      (alexandria:when-let
+          (first-line (read-initial-request-line stream))
+        (let* ((split-line (cl-ppcre:split "\\s+" first-line :limit 3))
+               (method (chunga:as-keyword (first split-line)))
+               (url-string (second split-line))
 
-           (match-start (position #\? url-string))
-           (uri (if match-start
-                    (subseq url-string 0 match-start)
-                    url-string))
-           (args (if match-start
-                     (parse-args-string (subseq url-string (1+ match-start)))
-                     (makehash))) ;; params arg
-           (headers (p-r (chunga:read-http-headers stream)))
+               (match-start (position #\? url-string))
+               (uri (if match-start
+                        (subseq url-string 0 match-start)
+                        url-string))
+               (args (if match-start
+                         (parse-args-string (subseq url-string (1+ match-start)))
+                         (makehash))) ;; params arg
+               (headers (p-r (chunga:read-http-headers stream)))
 
-           (transfer-encodings (cdr (assoc :transfer-encoding headers)))
+               (transfer-encodings (cdr (assoc :transfer-encoding headers)))
 
-           (chunkedp (make-sure-bool
-                      (and transfer-encodings
-                           (member "chunked" (cl-ppcre:split "\\s*,\\s*" transfer-encodings) :test #'equalp)))
-             )
+               (chunkedp (make-sure-bool
+                          (and transfer-encodings
+                               (member "chunked" (cl-ppcre:split "\\s*,\\s*" transfer-encodings) :test #'equalp)))
+                 )
 
-           (content-length (make-sure-number (cdr (assoc :CONTENT-LENGTH headers))))
+               (content-length (make-sure-number (cdr (assoc :CONTENT-LENGTH headers))))
 
-           (raw-body (p-r (read-http-body stream content-length chunkedp)))
-           (parsed-body (parse-body headers raw-body)))
+               (raw-body (read-http-body stream content-length chunkedp))
+               (parsed-body (parse-body headers raw-body)))
 
 
-      (p-r (make-instance 'request
-                          :headers-in headers
-                          :method method
-                          :uri uri
-                          :args args
-                          :raw-body raw-body
-                          :body parsed-body
-                          )))))
+          (p-r (make-instance 'request
+                              :headers-in headers
+                              :method method
+                              :uri uri
+                              :args args
+                              :raw-body raw-body
+                              :body parsed-body
+                              ))))
+    (error (e)
+      (log:error "Error occurs when parse request" e)
+      (error e))))
