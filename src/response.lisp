@@ -17,7 +17,7 @@
 
 (defmethod make-response (stream (response t))
   (send-response stream (make-instance 'response
-                                       :content-type "application/json" ;; need to guess with response
+                                       :content-type "application/text" ;; need to guess with response
                                        :headers (make-default-headers)
                                        :status-code 200
                                        :content response)))
@@ -30,6 +30,7 @@
   (:documentation "send response to stream"))
 
 (defmethod send-response (stream response)
+  (format t "send-response-----~%")
   (let* ((h-stream (flex:make-flexi-stream stream))
          (status-code (status-code response))
          (reason-phrase (gethash status-code +code-to-phrase+))
@@ -47,6 +48,7 @@
 
     (log:debug "writing ~a to stream~%" content)
     (write-sequence content h-stream)
+    (break)
     (finish-output stream)))
 
 ;; copy from hunchentoot, TODO 稍后研究

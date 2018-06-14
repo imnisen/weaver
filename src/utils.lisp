@@ -73,7 +73,7 @@
 (defmacro p-r (x)
   (let* ((g (gensym)))
     `(let ((,g ,x))
-       (log:debug "-->")
+       (log:debug "---->")
        (log:debug "~a~%" ',x)
        (log:debug "~a~%" ,g)
        ,g)))

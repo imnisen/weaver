@@ -1,26 +1,31 @@
 (in-package :weaver)
 
 (defun handle-request (stream)
-  (alexandria:when-let (r (parse-request stream))
-    (make-response stream (dispatch r))))
+  (format t "----handle-request---")
+  (alexandria:when-let (request (parse-request stream))
+    (make-response stream (dispatch request))))
 
-;; output content from client
-;; plus some mark then return to client
+(defparameter *finish-processing-socket* nil)
+
 (defun handle-connection (connection)
   (handler-case
-      (let* ((stream (usocket:socket-stream connection)))
-        (handle-request stream)
+      (let* ((stream (usocket:socket-stream connection))
+             (*finish-processing-socket* t))
 
-        (log:info "Connection ends")
 
-        (close stream)
-        (usocket:socket-close connection)
-        )
+        (unwind-protect
+             (loop
+                (handle-request stream)
+                (when *finish-processing-socket*
+                  (return)))
+          (close stream)
+          (usocket:socket-close connection)
+          (log:info "Connection ends")
+          ))
     (error (e)
       (log:error e))))
 
 (defun accept-socket (socket)
-
   (let ((connection (handler-case
                         (usocket:socket-accept socket)
                       ;; ignore condition here?
@@ -31,7 +36,6 @@
         (usocket:socket-close connection) ;; 考虑这个是否妥当
         (log:error "Error while creating worker thread for new incoming connection")
         ))))
-
 
 (defparameter *keep-going* t)
 ;; (defvar *running-socket* nil)

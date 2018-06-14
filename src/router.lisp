@@ -34,8 +34,13 @@
         (values nil nil nil))))
 
 
+(defun join-list (x y)
+  (if y
+      (append x y)
+      (list x)))
 
 (defun dispatch (request*)
+  (format t "---dispatch---~%")
   (let ((method (request-method request*))
         (uri (request-uri request*)))
     ;; (format t "dispatch:  ~a ~a ~a ~%" method uri *route-list*)
@@ -45,9 +50,9 @@
                (match method uri-withslash route-compile)
              (when match?
                (return
-                 (progn
-                   ;; (format t "call handler~%")
-                   (apply handler request* (1d-array-to-list arg-list))))))
+                 (apply handler (join-list
+                                 request*
+                                 (1d-array-to-list arg-list))))))
          finally (return (make-instance 'response
                                         :status-code 404
-                                        :content-type "application/json"))))))
+                                        :content-type "application/text"))))))
