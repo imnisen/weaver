@@ -96,14 +96,12 @@
 
                (chunkedp (make-sure-bool
                           (and transfer-encodings
-                               (member "chunked" (cl-ppcre:split "\\s*,\\s*" transfer-encodings) :test #'equalp)))
-                 )
+                               (member "chunked" (cl-ppcre:split "\\s*,\\s*" transfer-encodings) :test #'equalp))))
 
                (content-length (make-sure-number (cdr (assoc :CONTENT-LENGTH headers))))
 
-               (raw-body (read-http-body stream content-length chunkedp))
-               (parsed-body (parse-body headers raw-body)))
-
+               (raw-body (and (equalp method :post) (read-http-body stream content-length chunkedp)))
+               (parsed-body (and raw-body (parse-body headers raw-body))))
 
           (p-r (make-instance 'request
                               :headers-in headers
@@ -115,4 +113,5 @@
                               ))))
     (error (e)
       (log:error "Error occurs when parse request" e)
-      (error e))))
+      (error e))
+    ))

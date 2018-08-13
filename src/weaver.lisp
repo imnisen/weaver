@@ -7,7 +7,7 @@
                      (parse-request stream)
                    (error (e)
                      (log:warn "Error occours while parsing request" e)
-                     (make-response stream "parse-request-error"))))) ;; temp behavior
+                     (return-from handle-request (make-response stream "parse-request-error")))))) ;; temp behavior
     (make-response stream (dispatch request)))) ;; here function interface not beautiful
 
 (defparameter *finish-processing-socket* nil)
