@@ -7,8 +7,8 @@
                      (parse-request stream)
                    (error (e)
                      (log:warn "Error occours while parsing request" e)
-                     (return-from handle-request (make-response stream "parse-request-error")))))) ;; temp behavior
-    (make-response stream (dispatch request)))) ;; here function interface not beautiful
+                     (return-from handle-request (make-response stream "parse-request-error"))))))
+    (make-response stream (dispatch request) request)))
 
 (defparameter *finish-processing-socket* nil)
 
@@ -18,9 +18,9 @@
              (*finish-processing-socket* t))
         (unwind-protect
              (loop
-                (handle-request stream)
-                (when *finish-processing-socket*
-                  (return)))
+               (handle-request stream)
+               (when *finish-processing-socket*
+                 (return)))
           (close stream)
           (usocket:socket-close connection)
           (log:info "Connection ends")

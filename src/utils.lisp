@@ -92,3 +92,29 @@
 
 (defun make-json-string (&rest args)
   (json:encode-json-to-string (apply #'makehash args)))
+
+
+;; ;; Refactor these similar method
+;; (defun gzip-it (content)
+;;   "gizp压缩"
+;;   (salza2:compress-data (flexi-streams:string-to-octets content) 'salza2:gzip-compressor))
+
+;; (defun zlib-it (content)
+;;   "gizp压缩"
+;;   (salza2:compress-data (flexi-streams:string-to-octets content) 'salza2:zlib-compressor))
+
+;; (defun deflate-it (content)
+;;   "deflate压缩"
+;;   (salza2:compress-data (flexi-streams:string-to-octets content) 'salza2:deflate-compressor))
+
+(defun compress-body (content-encoding body)
+  "now body accepts only string"
+  (unless content-encoding
+    (return-from compress-body body))
+
+  (cond
+    ((string= content-encoding "gzip")
+     (salza2:compress-data (flexi-streams:string-to-octets body) 'salza2:gzip-compressor))
+    ((string= content-encoding "deflate")
+     (salza2:compress-data (flexi-streams:string-to-octets body) 'salza2:zlib-compressor)) ;; deflate->zlib
+    (T body)))

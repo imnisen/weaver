@@ -1,24 +1,31 @@
+
+
 # Weaver
+
 
 ## Usage
 
-Weaver is a self made web framework. Not finished yet. 
+Weaver is a self made web framework.
 
 [Name comes from](http://www.dota2.com/hero/weaver/)
 
 Wish me good luck;)
 
+
 ## Installation
+
 
 ## Author
 
 -   Nisen (imnisen@gmail.com)
 
+
 ## Copyright
 
 Copyright (c) 2018 Nisen (imnisen@gmail.com)
 
-## TODOLIST
+
+## TODO LIST
 
 -   [X] basic route
 -   [X] basic socket server
@@ -34,8 +41,8 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 -   [X] make 404 error works
 -   [X] friendly log message
 -   [X] add request transfer-encoding support
+-   [X] add request accept-encoding and response content-encoding support
 -   [ ] arrange log message
--   [ ] add content-encoding support
 -   [ ] add reply transfer-encoding support
 -   [ ] add default headers, such as headers etc
 -   [ ] make response header according to response content
@@ -48,3 +55,4 @@ Copyright (c) 2018 Nisen (imnisen@gmail.com)
 -   [ ] html parse conditions handle
 -   [ ] thread pool support
 -   [ ] soft and graceful stop
+

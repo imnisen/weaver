@@ -136,7 +136,6 @@
                                              :content :continuation)))
       (funcall continuation "foo" t)
       (funcall continuation (list (char-code #\z) (char-code #\a)) t)
-
       (funcall continuation (lambda (stream)
                               (write-char #\p stream))))
   (is status +status-ok+)
@@ -146,7 +145,52 @@
       ))
   )
 
+;; test Accept-encoding & Content-encoding
+(weaver:add-route :get "/accept-encoding"
+                  #'(lambda (request)
+                      (declare (ignore request))
+                      (let ((hash (make-hash-table :test 'equal)))
+                        (setf (gethash "hello" hash) "you success!")
+                        (json:encode-json-to-string hash))))
 
+(defun decompress-body (content-encoding body)
+  (unless content-encoding
+    (return-from decompress-body body))
+
+  (cond
+    ((string= content-encoding "gzip")
+     (if (streamp body)
+         (chipz:make-decompressing-stream :gzip body)
+         (chipz:decompress nil (chipz:make-dstate :gzip) body)))
+    ((string= content-encoding "deflate")
+     (if (streamp body)
+         (chipz:make-decompressing-stream :zlib body)
+         (chipz:decompress nil (chipz:make-dstate :zlib) body)))
+    (T body)))
+
+(multiple-value-bind (body status)
+    (drakma:http-request (uri-to-url "/accept-encoding")
+                         :method :get
+                         :additional-headers `(("accept-encoding" . "deflate"))
+                         )
+  (is status +status-ok+)
+  (when (> (length body) 0)
+    (let ((body-json (yason:parse (flex:octets-to-string (decompress-body "deflate" (flex:string-to-octets body))))))
+      (is "you success!" (gethash "hello" body-json))
+      ))
+  )
+
+(multiple-value-bind (body status)
+    (drakma:http-request (uri-to-url "/accept-encoding")
+                         :method :get
+                         :additional-headers `(("accept-encoding" . "gzip"))
+                         )
+  (is status +status-ok+)
+  (when (> (length body) 0)
+    (let ((body-json (yason:parse (flex:octets-to-string (decompress-body "gzip" (flex:string-to-octets body))))))
+      (is "you success!" (gethash "hello" body-json))
+      ))
+  )
 
 
 (ok (weaver:stop) "Server Stopped ?")

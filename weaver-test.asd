@@ -16,10 +16,11 @@
                :cl-json
                :dexador
                :yason
-               :drakma)
+               :drakma
+               :chipz)
   :components ((:module "t"
-                        :components
-                        ((:test-file "weaver"))))
+                :components
+                ((:test-file "weaver"))))
   :description "Test system for weaver"
 
   :defsystem-depends-on (:prove-asdf)

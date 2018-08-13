@@ -2,25 +2,32 @@
 
 (defclass response ()
   ((content-type :reader content-type :initarg :content-type)
-   (headers :reader response-headers :initarg :headers :initform nil)
+   (headers  :initarg :headers :initform nil :accessor response-headers)
    (status-code :reader status-code :initarg :status-code)
    (content :reader response-content :initarg :content :initform nil)))
 
 
-(defgeneric make-response (stream response)
+(defgeneric make-response (stream response request)
   (:documentation "make response to stream with response"))
 
-(defmethod make-response (stream (response response))
+(defmethod make-response (stream (response response) (request request))
+  ;; (break)
+  (alexandria:when-let ((accept-encodings (cdr (assoc :Accept-Encoding (headers-in request)))))
+    (let ((content-encodings (cl-ppcre:split "\\s*,\\s*" accept-encodings)))
+      (when (not (assoc :Content-Encoding (response-headers response)))
+        (push (cons :Content-Encoding (first content-encodings)) (response-headers response))) ;; choose first accept encodings
+      ))
   (send-response stream response))
 
 (defun make-default-headers () ())
 
-(defmethod make-response (stream (response t))
-  (send-response stream (make-instance 'response
+(defmethod make-response (stream (response t) (request request))
+  (make-response stream (make-instance 'response
                                        :content-type "text/plain" ;; need to guess with response
                                        :headers (make-default-headers)
                                        :status-code 200
-                                       :content response)))
+                                       :content response)
+                 request))
 
 (defvar +code-to-phrase+ (makehash 200 "ok"
                                    500 "Internal Server Error"
@@ -41,14 +48,17 @@
         ;; write headers
         ;; tmp add content-type, latter move it to headers, todo fix latter
         (write-header-line "Content-Type" (content-type response) h-stream)
-        (when headers
-          (loop for key being the hash-keys in headers using (hash-value value) do
-               (write-header-line (chunga:as-capitalized-string key) value h-stream)))
 
+        (when headers
+          (loop for (key . value) in headers do
+                (write-header-line (chunga:as-capitalized-string key) value h-stream)))
         (format h-stream "~C~C" #\Return #\Linefeed)
 
         (log:debug "writing ~a to stream~%" content)
-        (write-sequence content h-stream)
+        ;; according to accept-content to decide content-encoding
+        (write-sequence (compress-body (cdr (assoc :Content-Encoding headers)) content)
+                        h-stream)
+
         (finish-output stream))
     (error (e)
       (log:error "Error happens when send-response")
@@ -64,18 +74,18 @@ writes them directly to the client as an HTTP header line.")
     (write-char #\Space stream)
     (let ((start 0))
       (loop
-         (let ((end (or (position #\Newline string :start start)
-                        (length string))))
-           ;; skip empty lines, as they confuse certain HTTP clients
-           (unless (eql start end)
-             (unless (zerop start)
-               (write-char #\Tab stream))
-             (write-string string stream :start start :end end)
-             (write-char #\Return stream)
-             (write-char #\Linefeed stream))
-           (setf start (1+ end))
-           (when (<= (length string) start)
-             (return))))))
+        (let ((end (or (position #\Newline string :start start)
+                       (length string))))
+          ;; skip empty lines, as they confuse certain HTTP clients
+          (unless (eql start end)
+            (unless (zerop start)
+              (write-char #\Tab stream))
+            (write-string string stream :start start :end end)
+            (write-char #\Return stream)
+            (write-char #\Linefeed stream))
+          (setf start (1+ end))
+          (when (<= (length string) start)
+            (return))))))
   (:method (key (number number) stream)
     (write-header-line key (write-to-string number :escape nil :readably nil :base 10) stream))
   (:method (key value stream)

@@ -24,16 +24,17 @@
                :alexandria
                :yason
                :cl-json
-               :log4cl)
+               :log4cl
+               :salza2)
   :components ((:module "src"
-                        :serial t
-                        :components
-                        ((:file "packages")
-                         (:file "utils")
-                         (:file "request")
-                         (:file "response")
-                         (:file "router")
-                         (:file "weaver"))))
+                :serial t
+                :components
+                ((:file "packages")
+                 (:file "utils")
+                 (:file "request")
+                 (:file "response")
+                 (:file "router")
+                 (:file "weaver"))))
   :description ""
   :long-description
   #.(with-open-file (stream (merge-pathnames
